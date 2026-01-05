@@ -127,6 +127,16 @@ jobs:
                     "minLength": 1
                   }
                 },
+                "tox-plugins": {
+                  "description": "A list of tox plugins to install. By default, 'tox-uv' and 'tox-gh' are installed.",
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "default": ["tox-uv", "tox-gh"]
+                },
                 "cpythons": {
                   "description": "A list of CPython interpreter versions. The *last version* listed will be the default Python interpreter when 'python' is invoked, and will be the version used when installing and executing tox.",
                   "type": "array",
@@ -300,6 +310,9 @@ jobs:
                   skip_patterns.append(pattern)
               config["tox-skip-environments-regex"] = "|".join(skip_patterns)
 
+              # load tox plugins, with default
+              config["tox-plugins"] = config.get("tox-plugins", ["tox-uv", "tox-gh"])
+
 
           def main() -> None:
               # Load
@@ -386,7 +399,12 @@ jobs:
         if: "steps.restore-cache.outputs.cache-hit == false"
         run: |
           uv venv .venv
-          uv pip install --directory .venv tox tox-gh tox-uv
+          uv pip install --directory .venv tox
+
+      - name: "Install tox plugins"
+        if: "steps.restore-cache.outputs.cache-hit == false && fromJSON(env.tox-config).tox-plugins"
+        run: |
+          uv pip install --directory .venv ${{ join(fromJSON(env.tox-config).tox-plugins, ' ') }}
 
       - name: "Setup Pythons (requested)"
         if: "fromJSON(env.tox-config).python-versions-required != fromJSON(env.tox-config).python-versions-requested"

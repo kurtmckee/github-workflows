@@ -58,6 +58,9 @@ def transform_config(config: dict[str, typing.Any]) -> None:
         skip_patterns.append(pattern)
     config["tox-skip-environments-regex"] = "|".join(skip_patterns)
 
+    # load tox plugins, with default
+    config["tox-plugins"] = config.get("tox-plugins", ["tox-uv", "tox-gh"])
+
 
 def main() -> None:
     # Load
