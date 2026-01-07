@@ -310,8 +310,13 @@ jobs:
                   skip_patterns.append(pattern)
               config["tox-skip-environments-regex"] = "|".join(skip_patterns)
 
-              # load tox plugins, with default
-              config["tox-plugins"] = config.get("tox-plugins", ["tox-uv", "tox-gh"])
+              # load tox install requirements, with default plugins
+              tox_plugins = config.get("tox-plugins", ["tox-uv", "tox-gh"])
+              config["tox_install_requirements"] = ["tox"] + tox_plugins
+              runner_temp = pathlib.Path(os.environ["RUNNER_TEMP"])
+              config["tox_install_requirements_path"] = str(
+                  runner_temp / "tox_install_requirements.txt"
+              )
 
 
           def main() -> None:
@@ -326,6 +331,8 @@ jobs:
               output = json.dumps(config, sort_keys=True, separators=(",", ":"))
               with open(os.environ["GITHUB_ENV"], "a") as file:
                   file.write(f"tox-config={output}")
+              with open(config["tox_install_requirements_path"], "w") as file:
+                  file.write("\n".join(config["tox_install_requirements"]) + "\n")
 
 
           if __name__ == "__main__":
@@ -399,12 +406,7 @@ jobs:
         if: "steps.restore-cache.outputs.cache-hit == false"
         run: |
           uv venv .venv
-          uv pip install --directory .venv tox
-
-      - name: "Install tox plugins"
-        if: "steps.restore-cache.outputs.cache-hit == false && fromJSON(env.tox-config).tox-plugins"
-        run: |
-          uv pip install --directory .venv ${{ join(fromJSON(env.tox-config).tox-plugins, ' ') }}
+          uv pip install --directory .venv -r "${{ fromJSON(env.tox-config).tox_install_requirements_path }}"
 
       - name: "Setup Pythons (requested)"
         if: "fromJSON(env.tox-config).python-versions-required != fromJSON(env.tox-config).python-versions-requested"

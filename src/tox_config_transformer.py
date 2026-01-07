@@ -58,8 +58,13 @@ def transform_config(config: dict[str, typing.Any]) -> None:
         skip_patterns.append(pattern)
     config["tox-skip-environments-regex"] = "|".join(skip_patterns)
 
-    # load tox plugins, with default
-    config["tox-plugins"] = config.get("tox-plugins", ["tox-uv", "tox-gh"])
+    # load tox install requirements, with default plugins
+    tox_plugins = config.get("tox-plugins", ["tox-uv", "tox-gh"])
+    config["tox_install_requirements"] = ["tox"] + tox_plugins
+    runner_temp = pathlib.Path(os.environ["RUNNER_TEMP"])
+    config["tox_install_requirements_path"] = str(
+        runner_temp / "tox_install_requirements.txt"
+    )
 
 
 def main() -> None:
@@ -74,6 +79,8 @@ def main() -> None:
     output = json.dumps(config, sort_keys=True, separators=(",", ":"))
     with open(os.environ["GITHUB_ENV"], "a") as file:
         file.write(f"tox-config={output}")
+    with open(config["tox_install_requirements_path"], "w") as file:
+        file.write("\n".join(config["tox_install_requirements"]) + "\n")
 
 
 if __name__ == "__main__":
