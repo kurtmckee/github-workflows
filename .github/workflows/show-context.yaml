@@ -1,0 +1,102 @@
+# This file is a part of Kurt McKee's GitHub Workflows project.
+# https://github.com/kurtmckee/github-workflows
+# Copyright 2024-2026 Kurt McKee <contactme@kurtmckee.org>
+# SPDX-License-Identifier: MIT
+
+on:
+  workflow_call:
+
+env:
+  MY_WORKFLOW_PATH: "kurtmckee/github-workflows/.github/workflows/show-context.yaml"
+
+jobs:
+  show-context:
+    name: "test auto-checkouts of self-referenced actions"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "run my local custom action"
+        id: "get-action-path"
+        uses: "kurtmckee/github-workflows/.github/actions/get-repo-path@show-context"
+
+      - name: "confirm the outputs"
+        env:
+          WORKFLOW_ROOT: "${{ steps.get-action-path.outputs.path }}"
+        run: |
+          echo "${WORKFLOW_ROOT}"
+          cat "${WORKFLOW_ROOT}/README.rst"
+
+#  show-context:
+#    name: "show-context"
+#    runs-on: "ubuntu-latest"
+#    steps:
+#      - name: "Find the path to the caller's workflow file"
+#        env:
+#          workflow_ref: "${{ github.workflow_ref }}"
+#        run: |
+#          WORKFLOW_PATH="$(echo "${workflow_ref}" | cut -d'/' -f3- | cut -d'@' -f1)"
+#          echo "WORKFLOW_PATH=${WORKFLOW_PATH}"
+#          echo "WORKFLOW_PATH=${WORKFLOW_PATH}" >> "${GITHUB_ENV}"
+#
+#      - name: "Checkout the caller's repo"
+#        uses: "actions/checkout@v6"
+#        with:
+#          ref: "${{ github.workflow_sha }}"
+#
+#      - name: "Extract MY workflow revision"
+#        # The caller's workflow might use this reusable workflow more than once.
+#        # In this situation, there is no way to distinguish between the two.
+#        # The code in this step makes the assumption that the first "uses"
+#        # is the correct one, but there is no way to know this.
+#        run: |
+#          MY_WORKFLOW_REF="$(cat "${WORKFLOW_PATH}" | grep "${MY_WORKFLOW_PATH}" | cut -d@ -f2 | grep -Poe '[0-9a-z._-]+')"
+#          echo "MY_WORKFLOW_REF=${MY_WORKFLOW_REF}"
+#          echo "MY_WORKFLOW_REF=${MY_WORKFLOW_REF}" >> "${GITHUB_ENV}"
+#
+#          rm -rf . || true
+#
+#      - name: "Checkout MY repository"
+#        uses: "actions/checkout@v6"
+#        with:
+#          repository: "kurtmckee/github-workflows"
+#          ref: "${{ env.MY_WORKFLOW_REF }}"
+#
+#      - name: "Demonstrate success"
+#        run: |
+#          cat README.rst
+#
+#      - name: "github"
+#        shell: "bash"
+#        env:
+#          context: "${{ toJSON(github) }}"
+#        run: |
+#          echo "$context" | jq
+#
+#      - name: "env"
+#        shell: "bash"
+#        env:
+#          context: "${{ toJSON(env) }}"
+#        run: |
+#          echo "$context" | jq
+#
+#      - name: "job"
+#        shell: "bash"
+#        env:
+#          context: "${{ toJSON(job) }}"
+#        run: |
+#          echo "$context" | jq
+#
+#      - name: "runner"
+#        shell: "bash"
+#        env:
+#          context: "${{ toJSON(runner) }}"
+#        run: |
+#          echo "$context" | jq
+#
+#      - name: "ls /"
+#        run: "ls /"
+#
+#      - name: "ls ../"
+#        run: "ls ../"
+#
+#      - name: "ls ../../"
+#        run: "ls ../../"
