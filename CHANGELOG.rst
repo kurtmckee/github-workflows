@@ -17,6 +17,49 @@ in the ``changelog.d/`` directory on GitHub.
 
 ..  scriv-insert-here
 
+.. _changelog-2.0:
+
+2.0 — 2026-02-25
+================
+
+Breaking changes
+----------------
+
+*   ``create-pr``: No longer accept a ``runner`` config.
+
+    The workflow would not work on macOS or Windows runners.
+    The runner is currently set to ``ubuntu-24.04``.
+
+Changed
+-------
+
+*   Lock almost all software dependencies.
+*   Update all software dependencies.
+
+Fixed
+-----
+
+*   ``create-pr``: Ensure that a PR body file always exists.
+
+    This fixes a "does not exist" error from pandoc that occurs
+    if the tox label doesn't create a PR body file
+    and the ``pr-body`` workflow input is empty.
+
+Documentation
+-------------
+
+*   ``create-pr``: Document the ``pr-body-input-format`` config key.
+
+Development
+-----------
+
+*   Use templates to generate standalone reusable workflow files.
+
+    Now, instead of disallowing edits to portions of the workflows,
+    the underlying templates are fully editable.
+
+*   Use prek to update pre-commit hook versions.
+
 .. _changelog-1.8:
 
 1.8 — 2026-02-07
