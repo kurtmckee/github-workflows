@@ -86,9 +86,14 @@ jobs:
       - name: "Validate the raw tox config against the schema"
         if: "steps.lookup-config-cache.outputs.cache-hit == false"
         shell: "bash"
+        # Environment variables:
+        #
+        # * REQUIREMENTS_PATH
+        #
         run: |
           REQUIREMENTS_PATH="$(mktemp)"
           echo "${CHECK_JSONSCHEMA_REQUIREMENTS}" > "${REQUIREMENTS_PATH}"
+          echo "REQUIREMENTS_PATH=${REQUIREMENTS_PATH}" >> "$GITHUB_ENV"
 
           uv run \
             --no-managed-python \
@@ -166,6 +171,7 @@ jobs:
                 '.python-identifiers',
                 '.tox-config.json',
                 'tox.ini',
+                env.REQUIREMENTS_PATH,
                 fromJSON(env.TOX_CONFIG).cache-key-hash-files && '.hash-files.sha' || ''
               )
             )
