@@ -511,15 +511,14 @@ jobs:
 
       - name: "Create a PR"
         env:
-          VERSION: "${{ inputs.version }}"
           GH_TOKEN: "${{ github.token }}"
-          BRANCH_NAME: "${{ fromJSON(inputs.config).branch-name || env.default-branch-name }}"
+          COMPUTED_BRANCH_NAME: "${{ env.COMPUTED_BRANCH_NAME }}"
           PR_BASE: "${{ fromJSON(inputs.config).pr-base || env.default-pr-base }}"
           PR_TITLE: "${{ fromJSON(inputs.config).pr-title || env.default-pr-title }}"
         run: |
           gh pr create \
             --draft \
-            --head "${BRANCH_NAME}" \
+            --head "${COMPUTED_BRANCH_NAME}" \
             --base "${PR_BASE}" \
             --title "${PR_TITLE}" \
             --body-file "${RUNNER_TEMP}/pr-body.gfm"
