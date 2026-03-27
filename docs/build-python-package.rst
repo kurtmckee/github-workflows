@@ -20,6 +20,7 @@ Table of contents
 
 *   `Requirements`_
 *   `Permissions`_
+*   `Inputs`_
 *   `Outputs`_
 *   `Workflow example`_
 
@@ -27,7 +28,7 @@ Table of contents
 Requirements
 ============
 
-*   The project must be buildable solely using the Python ``build`` module.
+*   The project must be buildable solely using the Python `build`_ module.
 
     No additional dependencies are pre-installed for building.
 
@@ -43,6 +44,12 @@ This is the default, but it is recommended that permissions be explicitly set.
 
     permissions:
       contents: "read"
+
+
+Inputs
+======
+
+None.
 
 
 Outputs
@@ -90,3 +97,9 @@ Workflow example
             with:
               artifact-ids: "${{ needs.build.outputs.artifact-id }}"
               path: "${{ needs.build.outputs.packages-path }}"
+
+
+..  Links
+..  -----
+..
+..  _build: https://pypi.org/project/build/

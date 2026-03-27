@@ -17,12 +17,12 @@ on:
 
 env:
   PYTHON_VERSION: "3.13"
-  UV_VERSION: "0.10.6"
+  UV_VERSION: "0.11.2"
   PANDOC_VERSION: "3.8.3"
   SCRIV_REQUIREMENTS: |
-    attrs==25.4.0 ; python_version == "3.13"
+    attrs==26.1.0 ; python_version == "3.13"
     certifi==2026.2.25 ; python_version == "3.13"
-    charset-normalizer==3.4.4 ; python_version == "3.13"
+    charset-normalizer==3.4.6 ; python_version == "3.13"
     click-log==0.4.0 ; python_version == "3.13"
     click==8.3.1 ; python_version == "3.13"
     colorama==0.4.6 ; python_version == "3.13" and platform_system == "Windows"
@@ -31,7 +31,7 @@ env:
     markdown-it-py==4.0.0 ; python_version == "3.13"
     markupsafe==3.0.3 ; python_version == "3.13"
     mdurl==0.1.2 ; python_version == "3.13"
-    requests==2.32.5 ; python_version == "3.13"
+    requests==2.33.0 ; python_version == "3.13"
     scriv==1.8.0 ; python_version == "3.13"
     urllib3==2.6.3 ; python_version == "3.13"
 
@@ -294,6 +294,7 @@ jobs:
           )"
           export TAG_OBJECT_BODY
 
+          # Use `gh api` because `git` isn't configured with permissions.
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \

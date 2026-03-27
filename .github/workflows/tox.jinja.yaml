@@ -86,9 +86,14 @@ jobs:
       - name: "Validate the raw tox config against the schema"
         if: "steps.lookup-config-cache.outputs.cache-hit == false"
         shell: "bash"
+        # Environment variables:
+        #
+        # * REQUIREMENTS_PATH
+        #
         run: |
           REQUIREMENTS_PATH="$(mktemp)"
           echo "${CHECK_JSONSCHEMA_REQUIREMENTS}" > "${REQUIREMENTS_PATH}"
+          echo "REQUIREMENTS_PATH=${REQUIREMENTS_PATH}" >> "$GITHUB_ENV"
 
           uv run \
             --no-managed-python \
@@ -106,24 +111,28 @@ jobs:
       - name: "Transform tox config"
         id: "config-transformer"
         shell: "python"
+        # Environment variables:
+        #
+        # * TOX_CONFIG
+        #
         run: |
           [[ include_file("config_transformer.py") | indent(10) ]]
 
       - name: "Checkout the repository"
         uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+        with:
+          persist-credentials: "false"
 
       - name: "Save the tox config to a file for cache-busting"
         shell: "bash"
         run: |
-          cat << EOF > .tox-config.json
-          ${{ env.tox-config }}
-          EOF
+          echo "${TOX_CONFIG}" > .tox-config.json
 
       - name: "Calculate additional checksums"
-        if: "fromJSON(env.tox-config).cache-key-hash-files"
+        if: "fromJSON(env.TOX_CONFIG).cache-key-hash-files"
         shell: "bash"
         env:
-          FILE_PATTERNS: "${{ join(fromJSON(env.tox-config).cache-key-hash-files, ' ') }}"
+          FILE_PATTERNS: "${{ join(fromJSON(env.TOX_CONFIG).cache-key-hash-files, ' ') }}"
         run: |
           # shellcheck disable=SC2086
           for pattern in $FILE_PATTERNS; do
@@ -139,7 +148,7 @@ jobs:
         env:
           PIP_DISABLE_PIP_VERSION_CHECK: "1"
         with:
-          python-version: "${{ fromJSON(env.tox-config).python-versions-required }}"
+          python-version: "${{ fromJSON(env.TOX_CONFIG).python-versions-required }}"
           allow-prereleases: true
 
       - name: "Detect Pythons"
@@ -152,17 +161,18 @@ jobs:
           path: |
             .tox/
             .venv/
-            ${{ fromJSON(env.tox-config).cache-paths && join(fromJSON(env.tox-config).cache-paths, '\n') }}
+            ${{ fromJSON(env.TOX_CONFIG).cache-paths && join(fromJSON(env.TOX_CONFIG).cache-paths, '\n') }}
           key: "${{
             format(
               '{0}-os={1}-hash={2}',
-              fromJSON(env.tox-config).cache-key-prefix || 'tox',
-              fromJSON(env.tox-config).runner,
+              fromJSON(env.TOX_CONFIG).cache-key-prefix || 'tox',
+              fromJSON(env.TOX_CONFIG).runner,
               hashFiles(
                 '.python-identifiers',
                 '.tox-config.json',
                 'tox.ini',
-                fromJSON(env.tox-config).cache-key-hash-files && '.hash-files.sha' || ''
+                env.REQUIREMENTS_PATH,
+                fromJSON(env.TOX_CONFIG).cache-key-hash-files && '.hash-files.sha' || ''
               )
             )
             }}"
@@ -170,7 +180,7 @@ jobs:
       - name: "Identify .venv path"
         shell: "bash"
         run: |
-          echo 'venv-path=.venv/${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}' >> "$GITHUB_ENV"
+          echo 'VENV_PATH=.venv/${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}' >> "$GITHUB_ENV"
 
       - name: "Create a virtual environment (Windows)"
         if: "steps.restore-cache.outputs.cache-hit == false && runner.os == 'Windows'"
@@ -195,22 +205,62 @@ jobs:
           uv pip install --no-managed-python --directory=.venv --requirements="${REQUIREMENTS_PATH}"
 
       - name: "Setup Pythons (requested)"
-        if: "fromJSON(env.tox-config).python-versions-required != fromJSON(env.tox-config).python-versions-requested"
+        if: "fromJSON(env.TOX_CONFIG).python-versions-required != fromJSON(env.TOX_CONFIG).python-versions-requested"
         uses: "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" # v6.2.0
         env:
           PIP_DISABLE_PIP_VERSION_CHECK: "1"
         with:
-          python-version: "${{ fromJSON(env.tox-config).python-versions-requested }}"
+          python-version: "${{ fromJSON(env.TOX_CONFIG).python-versions-requested }}"
           allow-prereleases: true
 
-      - name: "Create the tox environments"
+      - name: "Create the tox environments (Linux/macOS)"
+        if: "runner.os != 'Windows'"
+        shell: "bash"
         env:
-          TOX_SKIP_ENV: "${{ fromJSON(env.tox-config).tox-skip-environments-regex }}"
+          TOX_SKIP_ENV: "${{ fromJSON(env.TOX_CONFIG).tox-skip-environments-regex }}"
+          TOX_ENVIRONMENTS: ${{ fromJSON(env.TOX_CONFIG).tox-environments && format('-e "{0}"', join(fromJSON(env.TOX_CONFIG).tox-environments, ',')) }}
         run: |
-          ${{ env.venv-path }}/tox run --colored=yes --notest ${{ fromJSON(env.tox-config).tox-environments && format('-e "{0}"', join(fromJSON(env.tox-config).tox-environments, ',')) }}
+          if [ "${TOX_ENVIRONMENT}" ]; then
+              "${VENV_PATH}/tox" run --colored=yes --notest "${TOX_ENVIRONMENTS}"
+          else
+              "${VENV_PATH}/tox" run --colored=yes --notest
+          fi
 
-      - name: "Run the test suite"
+      - name: "Run tox (Linux/macOS)"
+        if: "runner.os != 'Windows'"
+        shell: "bash"
         env:
-          TOX_SKIP_ENV: "${{ fromJSON(env.tox-config).tox-skip-environments-regex }}"
+          TOX_SKIP_ENV: "${{ fromJSON(env.TOX_CONFIG).tox-skip-environments-regex }}"
+          TOX_ENVIRONMENTS: ${{ fromJSON(env.TOX_CONFIG).tox-environments && format('-e "{0}"', join(fromJSON(env.TOX_CONFIG).tox-environments, ',')) }}
         run: |
-          ${{ env.venv-path }}/tox run --colored=yes --no-provision --skip-pkg-install ${{ fromJSON(env.tox-config).tox-environments && format('-e "{0}"', join(fromJSON(env.tox-config).tox-environments, ',')) }}
+          if [ "${TOX_ENVIRONMENT}" ]; then
+              "${VENV_PATH}/tox" run --colored=yes --no-provision --skip-pkg-install "${TOX_ENVIRONMENTS}"
+          else
+              "${VENV_PATH}/tox" run --colored=yes --no-provision --skip-pkg-install
+          fi
+
+      - name: "Create the tox environments (Windows)"
+        if: "runner.os == 'Windows'"
+        shell: "pwsh"
+        env:
+          TOX_SKIP_ENV: "${{ fromJSON(env.TOX_CONFIG).tox-skip-environments-regex }}"
+          TOX_ENVIRONMENTS: ${{ fromJSON(env.TOX_CONFIG).tox-environments && format('-e {0}', join(fromJSON(env.TOX_CONFIG).tox-environments, ',')) }}
+        run: |
+          if ($Env:TOX_ENVIRONMENTS) {
+              & "$Env:VENV_PATH/tox" run --colored=yes --notest "$Env:TOX_ENVIRONMENTS"
+          } else {
+              & "$Env:VENV_PATH/tox" run --colored=yes --notest
+          }
+
+      - name: "Run tox (Windows)"
+        if: "runner.os == 'Windows'"
+        shell: "pwsh"
+        env:
+          TOX_SKIP_ENV: "${{ fromJSON(env.TOX_CONFIG).tox-skip-environments-regex }}"
+          TOX_ENVIRONMENTS: ${{ fromJSON(env.TOX_CONFIG).tox-environments && format('-e {0}', join(fromJSON(env.TOX_CONFIG).tox-environments, ',')) }}
+        run: |
+          if ($Env:TOX_ENVIRONMENTS) {
+              & "$Env:VENV_PATH/tox" run --colored=yes --no-provision --skip-pkg-install "$Env:TOX_ENVIRONMENTS"
+          } else {
+              & "$Env:VENV_PATH/tox" run --colored=yes --no-provision --skip-pkg-install
+          }

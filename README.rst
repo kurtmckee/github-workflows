@@ -21,14 +21,20 @@ to a set of configuration values and a reference to the workflows here.
 Table of contents
 =================
 
-*   `tox`_
-*   `create-pr`_
-*   `create-tag-and-release`_
-*   `build-python-package`_
+*   Workflows
+
+    *   `tox`_
+    *   `create-pr`_
+    *   `create-tag-and-release`_
+    *   `build-python-package`_
+
+*   `Adding new workflows`_
 
 
 tox
 ===
+
+`Workflow documentation <docs/tox.rst>`__
 
 The ``tox.yaml`` workflow captures best practices I have found over the years
 that optimize test suite execution, including tools, plugins, and caching.
@@ -42,14 +48,11 @@ It has the following features:
 *   Fast tox environment creation using the ``tox-uv`` plugin
 *   Built-in caching of tox and virtual environments with strong cache-busting
 
-For information about how to configure the ``tox.yaml`` workflow,
-please see `the tox workflow documentation`_ in the ``docs/`` directory.
-
-..  _the tox workflow documentation: docs/tox.rst
-
 
 create-pr
 =========
+
+`Workflow documentation <docs/create-pr.rst>`__
 
 The ``create-pr.yaml`` workflow cuts release PRs
 and automates regular update PRs as needed.
@@ -61,14 +64,11 @@ It has the following features:
 *   Verified commits via the GitHub Actions bot account
 *   Schema validation of the inputs passed to the workflow
 
-For information about how to use the ``create-pr.yaml`` workflow,
-please see `the create-pr workflow documentation`_ in the ``docs/`` directory.
-
-..  _the create-pr workflow documentation: docs/create-pr.rst
-
 
 create-tag-and-release
 ======================
+
+`Workflow documentation <docs/create-tag-and-release.rst>`__
 
 The ``create-tag-and-release.yaml`` workflow creates a git tag and a GitHub release.
 
@@ -80,15 +80,11 @@ It has the following features:
     The tag body contains the CHANGELOG entry in GitHub-formatted Markdown.
 *   A GitHub release, also named ``v$VERSION``, is created.
 
-For information about how te use the ``create-tag-and-release.yaml`` workflow,
-please see `the create-tag-and-release workflow documentation`_
-in the ``docs/`` directory.
-
-..  _the create-tag-and-release workflow documentation: docs/create-tag-and-release.rst
-
 
 build-python-package
 ====================
+
+`Workflow documentation <docs/build-python-package.rst>`__
 
 The ``build-python-package.yaml`` workflow builds a Python sdist and wheel,
 and uploads an artifact containing these.
@@ -98,8 +94,8 @@ It has the following features:
 *   The project is built using the ``build`` module.
 *   An artifact is uploaded to GitHub, suitable for download and publication to PyPI.
 
-For information about how te use the ``build-python-package.yaml`` workflow,
-please see `the build-python-package workflow documentation`_
-in the ``docs/`` directory.
 
-..  _the build-python-package workflow documentation: docs/build-python-package.rst
+Adding new workflows
+====================
+
+See the `Adding new workflows <docs/adding-new-workflows.rst>`__ documentation.

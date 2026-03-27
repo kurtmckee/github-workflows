@@ -21,12 +21,28 @@ The reusable workflow takes two inputs:
 Table of contents
 =================
 
+*   `Requirements`_
 *   `Permissions`_
+*   `Inputs`_
+
+    *   `version`_
+    *   `config`_
+
 *   `Required config keys`_
-*   `Optional version input`_
 *   `Optional config keys`_
-*   `Passing the config to the workflow`_
+*   `Outputs`_
 *   `Workflow examples`_
+
+
+Requirements
+============
+
+By default, GitHub disallows workflows from opening PRs.
+A checkbox in the repository settings must be ticked:
+
+..  code-block:: text
+
+    Settings > Actions > General > Allow GitHub Actions to create and approve pull requests
 
 
 Permissions
@@ -45,12 +61,64 @@ These must be set on the calling workflow:
       contents: "write"
       pull-requests: "write"
 
-In addition, GitHub will block the GitHub Actions bot from opening PRs
-unless a checkbox in the repository settings is ticked:
 
-..  code-block:: text
+Inputs
+======
 
-    Settings > Actions > General > Allow GitHub Actions to create and approve pull requests
+..  _config:
+
+``config``
+----------
+
+The workflow requires a JSON-serialized input named ``"config"``.
+
+The best way to accomplish this is by using a matrix configuration,
+and using the ``toJSON()`` function to serialize it as a workflow input:
+
+..  code-block:: yaml
+
+    strategy:
+      matrix:
+        include:
+          - tox-label-create-changes: "update"
+
+    # ...
+
+    uses: "kurtmckee/github-workflows/.github/workflows/create-pr.yaml@???"
+    with:
+      config: "${{ toJSON(matrix) }}"
+
+
+For more information about the supported ``config`` object keys, see:
+
+*   `Required config keys`_
+*   `Optional config keys`_
+
+
+..  _version:
+
+``version``
+-----------
+
+A ``version`` input may be passed to the workflow, separate from the ``config`` input.
+It can then be referenced in several places, including these config keys:
+
+*   ``branch-name`` (example: ``releases/$VERSION``)
+*   ``commit-title`` (example: ``Update metadata for v$VERSION``)
+*   ``pr-title`` (example: ``Release v$VERSION``)
+
+It will also be available as an environment variable named ``VERSION`` when tox is run.
+Tox must be configured to pass ``VERSION`` into the test environment:
+
+..  code-block:: ini
+
+    [testenv:prep-release]
+    pass_env =
+        VERSION
+    deps =
+        poetry
+    commands =
+        poetry version {env:VERSION}
 
 
 Required config keys
@@ -91,30 +159,6 @@ Required config keys
             poetry version "{env:VERSION}"
             scriv collect
             scriv print --version "{env:VERSION}" --output "{env:PR_BODY_OUTPUT_PATH:{env:VERSION}.rst}"
-
-
-Optional version input
-======================
-
-A ``version`` input may be passed to the workflow, separate from the ``config`` input.
-It can then be referenced in several places, including these config keys:
-
-*   ``branch-name`` (example: ``releases/$VERSION``)
-*   ``commit-title`` (example: ``Update metadata for v$VERSION``)
-*   ``pr-title`` (example: ``Release v$VERSION``)
-
-It will also be available as an environment variable named ``VERSION`` when tox is run.
-Tox must be configured to pass ``VERSION`` into the test environment:
-
-..  code-block:: ini
-
-    [testenv:prep-release]
-    pass_env =
-        VERSION
-    deps =
-        poetry
-    commands =
-        poetry version {env:VERSION}
 
 
 Optional config keys
@@ -188,26 +232,10 @@ Optional config keys
     The default is ``rst``.
 
 
-Passing the config to the workflow
-==================================
+Outputs
+=======
 
-The workflow requires a JSON-serialized input named ``"config"``.
-
-The easiest way to accomplish this is by using a matrix configuration,
-and using the ``toJSON()`` function to serialize it as a workflow input:
-
-..  code-block:: yaml
-
-    strategy:
-      matrix:
-        include:
-          - tox-label-create-changes: "update"
-
-    # ...
-
-    uses: "kurtmckee/github-workflows/.github/workflows/tox.yaml@v1"
-    with:
-      config: "${{ toJSON(matrix) }}"
+None.
 
 
 Workflow examples
@@ -236,7 +264,7 @@ Trivial example
             include:
               - tox-label-create-changes: "update"
 
-        uses: "kurtmckee/github-workflows/.github/workflows/create-pr.yaml@v1"
+        uses: "kurtmckee/github-workflows/.github/workflows/create-pr.yaml@???"
         with:
           config: "${{ toJSON(matrix) }}"
 
@@ -276,7 +304,7 @@ Prepare a new release
                 pr-title: "Release v$VERSION"
                 tox-label-create-changes: "prep-release"
 
-        uses: "kurtmckee/github-workflows/.github/workflows/create-pr.yaml@v1"
+        uses: "kurtmckee/github-workflows/.github/workflows/create-pr.yaml@???"
         with:
           config: "${{ toJSON(matrix) }}"
           version: "${{ inputs.version }}"
