@@ -32,12 +32,12 @@ repos:
           - "--py313-plus"
 
   - repo: "https://github.com/psf/black-pre-commit-mirror"
-    rev: "ea488cebbfd88a5f50b8bd95d5c829d0bb76feb8"  # frozen: 26.1.0
+    rev: "fa505ab9c3e0fedafe1709fd7ac2b5f8996c670d"  # frozen: 26.3.1
     hooks:
       - id: "black"
 
   - repo: "https://github.com/pycqa/isort"
-    rev: "3459bdee0962449aad91235273c3fd1306dfebe5"  # frozen: 8.0.0
+    rev: "a333737ed43df02b18e6c95477ea1b285b3de15a"  # frozen: 8.0.1
     hooks:
       - id: "isort"
 
@@ -55,7 +55,7 @@ repos:
       - id: "editorconfig-checker"
 
   - repo: "https://github.com/python-jsonschema/check-jsonschema"
-    rev: "f761d025eb06bcd6a45bf152ba3593c9b8ad9a9b"  # frozen: 0.36.2
+    rev: "13614ab716a3113145f1294ed259d9fbe5678ff3"  # frozen: 0.37.1
     hooks:
       - id: "check-dependabot"
       - id: "check-github-workflows"
@@ -63,7 +63,7 @@ repos:
         files: "src/.+-schema.json"
 
   - repo: "https://github.com/adhtruong/mirrors-typos"
-    rev: "1dba9b5417293c3976bb185228a6aff50616b548"  # frozen: v1.43.5
+    rev: "cf074ce7ed10a99b0147ee84edc05a6b5732a122"  # frozen: v1.44.0
     hooks:
       - id: "typos"
 
