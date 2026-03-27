@@ -220,10 +220,18 @@ jobs:
           GH_TOKEN: "${{ github.token }}"
           COMPUTED_BRANCH_NAME: "${{ env.COMPUTED_BRANCH_NAME }}"
         run: |
-          git push origin "HEAD:${COMPUTED_BRANCH_NAME}"
+          # `gh api` is required because `git` has no permissions.
 
-          # The `gh api` command is used to create the commit
-          # because GitHub will sign the commit when created by a GraphQL API call.
+          # Create the branch on the server.
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            "/repos/${GITHUB_REPOSITORY}/git/refs" \
+            --field "ref=refs/heads/${COMPUTED_BRANCH_NAME}" \
+            --field "sha=${GITHUB_SHA}"
+
+          # Push a new commit to the branch.
           gh api graphql --input "${RUNNER_TEMP}/graphql-input.json"
 
       - name: "Generate the PR body"
