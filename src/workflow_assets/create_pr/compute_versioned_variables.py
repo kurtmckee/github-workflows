@@ -24,15 +24,25 @@ def main() -> int:
             print(f"`{missing_key}` is a mandatory environment variable.")
         return RC_FAILURE
 
+    # Branch name
     branch_name = os.environ["BRANCH_NAME"]
     if branch_name:
         version = os.environ["VERSION"]
         computed_branch_name = branch_name.replace("$VERSION", version)
     else:
         computed_branch_name = os.environ["DEFAULT_BRANCH_NAME"]
-
     with open(os.environ["GITHUB_ENV"], "a") as file:
         file.write(f"COMPUTED_BRANCH_NAME={computed_branch_name}\n")
+
+    # PR title
+    pr_title = os.environ["PR_TITLE"]
+    if pr_title:
+        version = os.environ["VERSION"]
+        computed_pr_title = pr_title.replace("$VERSION", version)
+    else:
+        computed_pr_title = os.environ["DEFAULT_PR_TITLE"]
+    with open(os.environ["GITHUB_ENV"], "a") as file:
+        file.write(f"COMPUTED_PR_TITLE={computed_pr_title}\n")
 
     return RC_SUCCESS
 

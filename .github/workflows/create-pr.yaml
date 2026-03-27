@@ -402,15 +402,18 @@ jobs:
           if __name__ == "__main__":
               sys.exit(main())
 
-      - name: "Compute the branch name"
+      - name: "Compute versioned variables"
         shell: "python"
         env:
           VERSION: "${{ inputs.version }}"
           DEFAULT_BRANCH_NAME: "${{ env.default-branch-name }}"
           BRANCH_NAME: "${{ fromJSON(inputs.config).branch-name }}"
+          DEFAULT_PR_TITLE: "${{ env.default-pr-title }}"
+          PR_TITLE: "${{ fromJSON(inputs.config).pr-title }}"
         # Creates new environment variables:
         #
         # * COMPUTED_BRANCH_NAME
+        # * COMPUTED_PR_TITLE
         #
         run: |
           # This file is a part of Kurt McKee's GitHub Workflows project.
@@ -439,15 +442,25 @@ jobs:
                       print(f"`{missing_key}` is a mandatory environment variable.")
                   return RC_FAILURE
 
+              # Branch name
               branch_name = os.environ["BRANCH_NAME"]
               if branch_name:
                   version = os.environ["VERSION"]
                   computed_branch_name = branch_name.replace("$VERSION", version)
               else:
                   computed_branch_name = os.environ["DEFAULT_BRANCH_NAME"]
-
               with open(os.environ["GITHUB_ENV"], "a") as file:
                   file.write(f"COMPUTED_BRANCH_NAME={computed_branch_name}\n")
+
+              # PR title
+              pr_title = os.environ["PR_TITLE"]
+              if pr_title:
+                  version = os.environ["VERSION"]
+                  computed_pr_title = pr_title.replace("$VERSION", version)
+              else:
+                  computed_pr_title = os.environ["DEFAULT_PR_TITLE"]
+              with open(os.environ["GITHUB_ENV"], "a") as file:
+                  file.write(f"COMPUTED_PR_TITLE={computed_pr_title}\n")
 
               return RC_SUCCESS
 
@@ -513,12 +526,12 @@ jobs:
         env:
           GH_TOKEN: "${{ github.token }}"
           COMPUTED_BRANCH_NAME: "${{ env.COMPUTED_BRANCH_NAME }}"
+          COMPUTED_PR_TITLE: "${{ env.COMPUTED_PR_TITLE }}"
           PR_BASE: "${{ fromJSON(inputs.config).pr-base || env.default-pr-base }}"
-          PR_TITLE: "${{ fromJSON(inputs.config).pr-title || env.default-pr-title }}"
         run: |
           gh pr create \
             --draft \
             --head "${COMPUTED_BRANCH_NAME}" \
             --base "${PR_BASE}" \
-            --title "${PR_TITLE}" \
+            --title "${COMPUTED_PR_TITLE}" \
             --body-file "${RUNNER_TEMP}/pr-body.gfm"

@@ -202,18 +202,21 @@ jobs:
         run: |
           [[ include_file("create_commit_request_body.py") | indent(10) ]]
 
-      - name: "Compute the branch name"
+      - name: "Compute versioned variables"
         shell: "python"
         env:
           VERSION: "${{ inputs.version }}"
           DEFAULT_BRANCH_NAME: "${{ env.default-branch-name }}"
           BRANCH_NAME: "${{ fromJSON(inputs.config).branch-name }}"
+          DEFAULT_PR_TITLE: "${{ env.default-pr-title }}"
+          PR_TITLE: "${{ fromJSON(inputs.config).pr-title }}"
         # Creates new environment variables:
         #
         # * COMPUTED_BRANCH_NAME
+        # * COMPUTED_PR_TITLE
         #
         run: |
-          [[ include_file("compute_branch_name.py") | indent(10) ]]
+          [[ include_file("compute_versioned_variables.py") | indent(10) ]]
 
       - name: "Push a new branch"
         env:
@@ -273,12 +276,12 @@ jobs:
         env:
           GH_TOKEN: "${{ github.token }}"
           COMPUTED_BRANCH_NAME: "${{ env.COMPUTED_BRANCH_NAME }}"
+          COMPUTED_PR_TITLE: "${{ env.COMPUTED_PR_TITLE }}"
           PR_BASE: "${{ fromJSON(inputs.config).pr-base || env.default-pr-base }}"
-          PR_TITLE: "${{ fromJSON(inputs.config).pr-title || env.default-pr-title }}"
         run: |
           gh pr create \
             --draft \
             --head "${COMPUTED_BRANCH_NAME}" \
             --base "${PR_BASE}" \
-            --title "${PR_TITLE}" \
+            --title "${COMPUTED_PR_TITLE}" \
             --body-file "${RUNNER_TEMP}/pr-body.gfm"
