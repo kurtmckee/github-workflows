@@ -15,6 +15,9 @@ on:
       - "main"
       - "releases"
 
+permissions:
+  contents: "read"
+
 jobs:
   test:
     name: "${{ matrix.name }}"

@@ -70,7 +70,7 @@ def main() -> None:
     # Write
     output = json.dumps(config, sort_keys=True, separators=(",", ":"))
     with open(os.environ["GITHUB_ENV"], "a") as file:
-        file.write(f"tox-config={output}")
+        file.write(f"TOX_CONFIG={output}")
 
 
 if __name__ == "__main__":

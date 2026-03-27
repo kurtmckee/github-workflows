@@ -80,6 +80,11 @@ repos:
           - 'jinja2==3.1.6 ; python_version == "3.13"'
           - 'markupsafe==3.0.3 ; python_version == "3.13"'
 
+  - repo: "https://github.com/zizmorcore/zizmor-pre-commit"
+    rev: "ea2eb407b4cbce87cf0d502f36578950494f5ac9"  # frozen: v1.23.1
+    hooks:
+    - id: "zizmor"
+
   - repo: "https://github.com/rhysd/actionlint"
     rev: "393031adb9afb225ee52ae2ccd7a5af5525e03e8"  # frozen: v1.7.11
     hooks:

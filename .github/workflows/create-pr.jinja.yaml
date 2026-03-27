@@ -150,6 +150,7 @@ jobs:
       - name: "Checkout the repository"
         uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
         with:
+          persist-credentials: "false"
           ref: "${{ fromJSON(inputs.config).branch-from || env.default-branch-from }}"
           fetch-depth: 0
 
@@ -205,9 +206,10 @@ jobs:
           VERSION: "${{ inputs.version }}"
           GH_TOKEN: "${{ github.token }}"
           COMMIT_TITLE: "${{ fromJSON(inputs.config).commit-title || env.default-commit-title }}"
+          BRANCH_NAME: "${{ fromJSON(inputs.config).branch-name || env.default-branch-name }}"
         run: |
-          git push origin HEAD:"${{ fromJSON(inputs.config).branch-name || env.default-branch-name }}"
-          gh api graphql --input "${{ runner.temp }}/graphql-input.json"
+          git push origin "HEAD:${BRANCH_NAME}"
+          gh api graphql --input "${RUNNER_TEMP}/graphql-input.json"
 
       - name: "Generate the PR body"
         env:
@@ -248,10 +250,13 @@ jobs:
         env:
           VERSION: "${{ inputs.version }}"
           GH_TOKEN: "${{ github.token }}"
+          BRANCH_NAME: "${{ fromJSON(inputs.config).branch-name || env.default-branch-name }}"
+          PR_BASE: "${{ fromJSON(inputs.config).pr-base || env.default-pr-base }}"
+          PR_TITLE: "${{ fromJSON(inputs.config).pr-title || env.default-pr-title }}"
         run: |
           gh pr create \
             --draft \
-            --head "${{ fromJSON(inputs.config).branch-name || env.default-branch-name }}" \
-            --base "${{ fromJSON(inputs.config).pr-base || env.default-pr-base }}" \
-            --title "${{ fromJSON(inputs.config).pr-title || env.default-pr-title }}" \
+            --head "${BRANCH_NAME}" \
+            --base "${PR_BASE}" \
+            --title "${PR_TITLE}" \
             --body-file "${RUNNER_TEMP}/pr-body.gfm"
