@@ -19,7 +19,8 @@ on:
         description: |
           The version to use when creating the release.
 
-          This must be a valid version specifier (see PEP 440),
+          This must be a valid version specifier
+          (see PEP 440 -- https://peps.python.org/pep-0440/),
           but the workflow itself doesn't currently validate the version.
 
           The version can be referenced in several configuration variables
@@ -40,13 +41,13 @@ on:
 
 env:
   PYTHON_VERSION: "3.13"
-  UV_VERSION: "0.10.6"
+  UV_VERSION: "0.11.2"
   PANDOC_VERSION: "3.8.3"
   CHECK_JSONSCHEMA_REQUIREMENTS: |
-    attrs==25.4.0 ; python_version == "3.13"
+    attrs==26.1.0 ; python_version == "3.13"
     certifi==2026.2.25 ; python_version == "3.13"
-    charset-normalizer==3.4.4 ; python_version == "3.13"
-    check-jsonschema==0.36.2 ; python_version == "3.13"
+    charset-normalizer==3.4.6 ; python_version == "3.13"
+    check-jsonschema==0.37.1 ; python_version == "3.13"
     click==8.3.1 ; python_version == "3.13"
     colorama==0.4.6 ; python_version == "3.13" and platform_system == "Windows"
     idna==3.11 ; python_version == "3.13"
@@ -54,26 +55,27 @@ env:
     jsonschema==4.26.0 ; python_version == "3.13"
     referencing==0.37.0 ; python_version == "3.13"
     regress==2025.10.1 ; python_version == "3.13"
-    requests==2.32.5 ; python_version == "3.13"
+    requests==2.33.0 ; python_version == "3.13"
     rpds-py==0.30.0 ; python_version == "3.13"
     ruamel-yaml==0.19.1 ; python_version == "3.13"
     urllib3==2.6.3 ; python_version == "3.13"
   TOX_REQUIREMENTS: |
-    cachetools==7.0.1 ; python_version == "3.13"
+    cachetools==7.0.5 ; python_version == "3.13"
     colorama==0.4.6 ; python_version == "3.13"
     distlib==0.4.0 ; python_version == "3.13"
-    filelock==3.24.3 ; python_version == "3.13"
+    filelock==3.25.2 ; python_version == "3.13"
     packaging==26.0 ; python_version == "3.13"
-    platformdirs==4.9.2 ; python_version == "3.13"
+    platformdirs==4.9.4 ; python_version == "3.13"
     pluggy==1.6.0 ; python_version == "3.13"
     pyproject-api==1.10.0 ; python_version == "3.13"
-    python-discovery==1.0.0 ; python_version == "3.13"
+    python-discovery==1.2.1 ; python_version == "3.13"
+    tomli-w==1.2.0 ; python_version == "3.13"
     tox-gh==1.7.1 ; python_version == "3.13"
-    tox-uv-bare==1.33.0 ; python_version == "3.13"
-    tox-uv==1.33.0 ; python_version == "3.13"
-    tox==4.46.3 ; python_version == "3.13"
-    uv==0.10.6 ; python_version == "3.13"
-    virtualenv==21.0.0 ; python_version == "3.13"
+    tox-uv-bare==1.33.4 ; python_version == "3.13"
+    tox-uv==1.33.4 ; python_version == "3.13"
+    tox==4.51.0 ; python_version == "3.13"
+    uv==0.11.2 ; python_version == "3.13"
+    virtualenv==21.2.0 ; python_version == "3.13"
 
   # These values are used when a config value is not specified.
   default-branch-from: "main"
@@ -241,6 +243,7 @@ jobs:
       - name: "Checkout the repository"
         uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
         with:
+          persist-credentials: "false"
           ref: "${{ fromJSON(inputs.config).branch-from || env.default-branch-from }}"
           fetch-depth: 0
 
@@ -399,14 +402,90 @@ jobs:
           if __name__ == "__main__":
               sys.exit(main())
 
-      - name: "Push a new branch"
+      - name: "Compute versioned variables"
+        shell: "python"
         env:
           VERSION: "${{ inputs.version }}"
-          GH_TOKEN: "${{ github.token }}"
-          COMMIT_TITLE: "${{ fromJSON(inputs.config).commit-title || env.default-commit-title }}"
+          DEFAULT_BRANCH_NAME: "${{ env.default-branch-name }}"
+          BRANCH_NAME: "${{ fromJSON(inputs.config).branch-name }}"
+          DEFAULT_PR_TITLE: "${{ env.default-pr-title }}"
+          PR_TITLE: "${{ fromJSON(inputs.config).pr-title }}"
+        # Creates new environment variables:
+        #
+        # * COMPUTED_BRANCH_NAME
+        # * COMPUTED_PR_TITLE
+        #
         run: |
-          git push origin HEAD:"${{ fromJSON(inputs.config).branch-name || env.default-branch-name }}"
-          gh api graphql --input "${{ runner.temp }}/graphql-input.json"
+          # This file is a part of Kurt McKee's GitHub Workflows project.
+          # https://github.com/kurtmckee/github-workflows
+          # Copyright 2024-2026 Kurt McKee <contactme@kurtmckee.org>
+          # SPDX-License-Identifier: MIT
+
+          import os
+          import sys
+
+          RC_SUCCESS = 0
+          RC_FAILURE = 1
+
+          mandatory_environment_variables = {
+              "BRANCH_NAME",
+              "DEFAULT_BRANCH_NAME",
+              "GITHUB_ENV",
+              "VERSION",
+          }
+
+
+          def main() -> int:
+              # Ensure mandatory environment variables are present.
+              if missing_keys := (mandatory_environment_variables - os.environ.keys()):
+                  for missing_key in missing_keys:
+                      print(f"`{missing_key}` is a mandatory environment variable.")
+                  return RC_FAILURE
+
+              # Branch name
+              branch_name = os.environ["BRANCH_NAME"]
+              if branch_name:
+                  version = os.environ["VERSION"]
+                  computed_branch_name = branch_name.replace("$VERSION", version)
+              else:
+                  computed_branch_name = os.environ["DEFAULT_BRANCH_NAME"]
+              with open(os.environ["GITHUB_ENV"], "a") as file:
+                  file.write(f"COMPUTED_BRANCH_NAME={computed_branch_name}\n")
+
+              # PR title
+              pr_title = os.environ["PR_TITLE"]
+              if pr_title:
+                  version = os.environ["VERSION"]
+                  computed_pr_title = pr_title.replace("$VERSION", version)
+              else:
+                  computed_pr_title = os.environ["DEFAULT_PR_TITLE"]
+              with open(os.environ["GITHUB_ENV"], "a") as file:
+                  file.write(f"COMPUTED_PR_TITLE={computed_pr_title}\n")
+
+              return RC_SUCCESS
+
+
+          if __name__ == "__main__":
+              sys.exit(main())
+
+      - name: "Push a new branch"
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          COMPUTED_BRANCH_NAME: "${{ env.COMPUTED_BRANCH_NAME }}"
+        run: |
+          # `gh api` is required because `git` has no permissions.
+
+          # Create the branch on the server.
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            "/repos/${GITHUB_REPOSITORY}/git/refs" \
+            --field "ref=refs/heads/${COMPUTED_BRANCH_NAME}" \
+            --field "sha=${GITHUB_SHA}"
+
+          # Push a new commit to the branch.
+          gh api graphql --input "${RUNNER_TEMP}/graphql-input.json"
 
       - name: "Generate the PR body"
         env:
@@ -445,12 +524,14 @@ jobs:
 
       - name: "Create a PR"
         env:
-          VERSION: "${{ inputs.version }}"
           GH_TOKEN: "${{ github.token }}"
+          COMPUTED_BRANCH_NAME: "${{ env.COMPUTED_BRANCH_NAME }}"
+          COMPUTED_PR_TITLE: "${{ env.COMPUTED_PR_TITLE }}"
+          PR_BASE: "${{ fromJSON(inputs.config).pr-base || env.default-pr-base }}"
         run: |
           gh pr create \
             --draft \
-            --head "${{ fromJSON(inputs.config).branch-name || env.default-branch-name }}" \
-            --base "${{ fromJSON(inputs.config).pr-base || env.default-pr-base }}" \
-            --title "${{ fromJSON(inputs.config).pr-title || env.default-pr-title }}" \
+            --head "${COMPUTED_BRANCH_NAME}" \
+            --base "${PR_BASE}" \
+            --title "${COMPUTED_PR_TITLE}" \
             --body-file "${RUNNER_TEMP}/pr-body.gfm"
