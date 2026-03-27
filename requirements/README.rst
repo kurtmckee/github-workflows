@@ -36,7 +36,7 @@ This can be invoked by running:
 
 ..  code-block::
 
-    tox run -m update
+    tox run -e update-requirements
 
 
 How to add dependencies

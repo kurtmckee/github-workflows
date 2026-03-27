@@ -17,7 +17,8 @@ on:
         description: |
           The version to use when creating the release.
 
-          This must be a valid version specifier (see PEP 440),
+          This must be a valid version specifier
+          (see PEP 440 -- https://peps.python.org/pep-0440/),
           but the workflow itself doesn't currently validate the version.
 
           The version can be referenced in several configuration variables
@@ -209,6 +210,9 @@ jobs:
           BRANCH_NAME: "${{ fromJSON(inputs.config).branch-name || env.default-branch-name }}"
         run: |
           git push origin "HEAD:${BRANCH_NAME}"
+
+          # The `gh api` command is used to create the commit
+          # because GitHub will sign the commit when created by a GraphQL API call.
           gh api graphql --input "${RUNNER_TEMP}/graphql-input.json"
 
       - name: "Generate the PR body"

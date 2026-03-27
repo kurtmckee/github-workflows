@@ -294,6 +294,7 @@ jobs:
           )"
           export TAG_OBJECT_BODY
 
+          # Use `gh api` because `git` isn't configured with permissions.
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \

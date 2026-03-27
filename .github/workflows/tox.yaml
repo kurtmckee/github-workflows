@@ -48,7 +48,7 @@ env:
     tox-gh==1.7.1 ; python_version == "3.13"
     tox-uv-bare==1.33.4 ; python_version == "3.13"
     tox-uv==1.33.4 ; python_version == "3.13"
-    tox==4.50.3 ; python_version == "3.13"
+    tox==4.51.0 ; python_version == "3.13"
     uv==0.11.2 ; python_version == "3.13"
     virtualenv==21.2.0 ; python_version == "3.13"
 
@@ -473,7 +473,7 @@ jobs:
               "${VENV_PATH}/tox" run --colored=yes --notest
           fi
 
-      - name: "Run the test suite (Linux/macOS)"
+      - name: "Run tox (Linux/macOS)"
         if: "runner.os != 'Windows'"
         shell: "bash"
         env:
@@ -499,7 +499,7 @@ jobs:
               & "$Env:VENV_PATH/tox" run --colored=yes --notest
           }
 
-      - name: "Run the test suite (Windows)"
+      - name: "Run tox (Windows)"
         if: "runner.os == 'Windows'"
         shell: "pwsh"
         env:

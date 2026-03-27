@@ -76,6 +76,10 @@ repos:
         always_run: true
         pass_filenames: false
         additional_dependencies:
+          # The dependencies here are injected from a lock file
+          # when `tox run -e update-requirements` is run.
+          # DO NOT edit these dependencies manually.
+          #
           # additional_dependencies source: requirements/templating/requirements.txt
           - 'jinja2==3.1.6 ; python_version == "3.13"'
           - 'markupsafe==3.0.3 ; python_version == "3.13"'

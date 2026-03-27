@@ -21,6 +21,7 @@ Table of contents
 
 *   `Requirements`_
 *   `Permissions`_
+*   `Inputs`_
 *   `Outputs`_
 *   `Workflow example`_
 
@@ -47,13 +48,19 @@ These must be set on the calling workflow:
       contents: "write"
 
 
+Inputs
+======
+
+None.
+
+
 Outputs
 =======
 
 *   ``project-version``
 
     The version of the project extracted from ``project.version`` in ``pyproject.toml``.
-    For example, ``v1.2.3``.
+    For example, ``1.2.3``.
 
 *   ``tag-name``
 
