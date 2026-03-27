@@ -17,6 +17,26 @@ in the ``changelog.d/`` directory on GitHub.
 
 ..  scriv-insert-here
 
+.. _changelog-2.1:
+
+2.1 — 2026-03-27
+================
+
+Changed
+-------
+
+-   ``tox``: Bust the cache if the workflow's locked dependencies change.
+
+Documentation
+-------------
+
+-   Document how to create new templated workflows.
+
+Development
+-----------
+
+-   Introduce zizmor and address its warnings.
+
 .. _changelog-2.0:
 
 2.0 — 2026-02-25
