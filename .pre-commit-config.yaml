@@ -42,7 +42,7 @@ repos:
       - id: "isort"
 
   - repo: "https://github.com/pycqa/flake8"
-    rev: "c48217e1fc006c2dddd14df54e83b67da15de5cd"  # frozen: 7.3.0
+    rev: "d93590f5be797aabb60e3b09f2f52dddb02f349f"  # frozen: 7.3.0
     hooks:
       - id: "flake8"
         additional_dependencies:
@@ -55,7 +55,7 @@ repos:
       - id: "editorconfig-checker"
 
   - repo: "https://github.com/python-jsonschema/check-jsonschema"
-    rev: "13614ab716a3113145f1294ed259d9fbe5678ff3"  # frozen: 0.37.1
+    rev: "ed81924a8b1cecdaa570b072528fa80c9c4d6ccd"  # frozen: 0.37.1
     hooks:
       - id: "check-dependabot"
       - id: "check-github-workflows"
@@ -63,7 +63,7 @@ repos:
         files: "src/.+-schema.json"
 
   - repo: "https://github.com/adhtruong/mirrors-typos"
-    rev: "cf074ce7ed10a99b0147ee84edc05a6b5732a122"  # frozen: v1.44.0
+    rev: "fe91b7074cf95f3fbc43c448161cb583f4dc0ee8"  # frozen: v1.45.0
     hooks:
       - id: "typos"
 
@@ -90,7 +90,7 @@ repos:
     - id: "zizmor"
 
   - repo: "https://github.com/rhysd/actionlint"
-    rev: "393031adb9afb225ee52ae2ccd7a5af5525e03e8"  # frozen: v1.7.11
+    rev: "914e7df21a07ef503a81201c76d2b11c789d3fca"  # frozen: v1.7.12
     hooks:
       - id: "actionlint"
         additional_dependencies:
