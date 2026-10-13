@@ -444,7 +444,7 @@ jobs:
 
           uv venv --no-project --no-managed-python .venv
           Out-File -InputObject "*" -FilePath .venv/.gitignore
-          uv pip install --no-managed-python --directory=.venv --requirements=$REQUIREMENTS_PATH --link-mode=copy
+          uv pip install --no-managed-python --prefix=.venv --requirements=$REQUIREMENTS_PATH --link-mode=copy
 
       - name: "Create a virtual environment (non-Windows)"
         if: "steps.restore-cache.outputs.cache-hit == false && runner.os != 'Windows'"
@@ -455,7 +455,7 @@ jobs:
 
           uv venv --no-project --no-managed-python .venv
           echo "*" > ".venv/.gitignore"
-          uv pip install --no-managed-python --directory=.venv --requirements="${REQUIREMENTS_PATH}"
+          uv pip install --no-managed-python --prefix=.venv --requirements="${REQUIREMENTS_PATH}"
 
       - name: "Setup Pythons (requested)"
         if: "fromJSON(env.TOX_CONFIG).python-versions-required != fromJSON(env.TOX_CONFIG).python-versions-requested"
