@@ -96,10 +96,16 @@ repos:
         additional_dependencies:
           - "github.com/wasilibs/go-shellcheck/cmd/shellcheck@4e7020840c303923eb1ab846fc446d77be892570"
         args: [
-          # Awaiting update
+          # Awaiting support for safe relative paths "$/".
           '-ignore',
           'reusable workflow call "\$/.+?" at "uses" is not following the format',
-          # Awaiting update
+          # Awaiting recognition of "ubuntu-26.04" runners.
           '-ignore',
           'label "ubuntu-26.04" is unknown',
+          # Awaiting support for "background: true".
+          '-ignore',
+          'unexpected key "background" for step',
+          # Awaiting support for "- wait-all: true" steps.
+          '-ignore',
+          'step must run script with "run" section or run action with "uses" section',
         ]
