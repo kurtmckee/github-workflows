@@ -48,6 +48,7 @@ jobs:
     steps:
       - name: "Checkout the repository"
         uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
+        background: true
         with:
           ref: "${{ github.sha }}"
           fetch-depth: "0"
@@ -56,15 +57,28 @@ jobs:
 
       - name: "Setup Python"
         uses: "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97" # v7.0.0
+        background: true
         with:
           python-version: "${{ env.PYTHON_VERSION }}"
 
       - name: "Install uv"
         uses: "astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7" # v10.2.0
+        background: true
         with:
           version: "${{ env.UV_VERSION }}"
           enable-cache: "false"
           ignore-empty-workdir: "true"
+
+      - name: "Install pandoc"
+        background: true
+        env:
+          PANDOC_DEB_URL: "https://github.com/jgm/pandoc/releases/download/${{ env.PANDOC_VERSION }}/pandoc-${{ env.PANDOC_VERSION }}-1-amd64.deb"
+        run: |
+          wget -nv -O "${RUNNER_TEMP}/pandoc.deb" "${PANDOC_DEB_URL}"
+          sudo dpkg -i "${RUNNER_TEMP}/pandoc.deb"
+          rm "${RUNNER_TEMP}/pandoc.deb"
+
+      - wait-all: true
 
       - name: "Get tag name"
         id: "get-tag-name"
@@ -113,15 +127,6 @@ jobs:
 
           echo "BOT_NAME=${BOT_NAME}" >> "${GITHUB_ENV}"
           echo "BOT_EMAIL=${BOT_EMAIL}" >> "${GITHUB_ENV}"
-
-      - name: "Install pandoc"
-        if: "steps.verify-repo-state.outputs.tag-exists == 'false'"
-        env:
-          PANDOC_DEB_URL: "https://github.com/jgm/pandoc/releases/download/${{ env.PANDOC_VERSION }}/pandoc-${{ env.PANDOC_VERSION }}-1-amd64.deb"
-        run: |
-          wget -nv -O pandoc.deb "${PANDOC_DEB_URL}"
-          sudo dpkg -i ./pandoc.deb
-          rm ./pandoc.deb
 
       - name: "Generate the annotated git tag content"
         if: "steps.verify-repo-state.outputs.tag-exists == 'false'"
