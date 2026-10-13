@@ -53,12 +53,14 @@ jobs:
           echo "$inputs_config" > ".tox-config.raw.json"
 
       - name: "Setup Python for tox config validation/transformation"
-        uses: "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" # v6.2.0
+        uses: "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97" # v7.0.0
+        background: true
         with:
           python-version: "${{ env.PYTHON_VERSION }}"
 
       - name: "Install uv"
-        uses: "astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867" # v7.1.6
+        uses: "astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7" # v10.2.0
+        background: true
         with:
           version: "${{ env.UV_VERSION }}"
           enable-cache: "false"
@@ -68,11 +70,14 @@ jobs:
       # a cache hit is sufficient to demonstrate that no further validation is required.
       - name: "Check if raw tox config is already validated"
         id: "lookup-config-cache"
-        uses: "actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306" # v5.0.3
+        uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+        background: true
         with:
           lookup-only: true
           path: ".tox-config.raw.json"
           key: "config-${{ hashFiles('.tox-config.raw.json') }}"
+
+      - wait-all: true
 
       - name: "Write tox config schema"
         if: "steps.lookup-config-cache.outputs.cache-hit == false"
@@ -103,7 +108,7 @@ jobs:
 
       - name: "Create a 'config-is-validated' cache key"
         if: "steps.lookup-config-cache.outputs.cache-hit == false"
-        uses: "actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306" # v5.0.3
+        uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
         with:
           path: ".tox-config.raw.json"
           key: "${{ steps.lookup-config-cache.outputs.cache-primary-key }}"
@@ -119,7 +124,7 @@ jobs:
           [[ include_file("config_transformer.py") | indent(10) ]]
 
       - name: "Checkout the repository"
-        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+        uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
         with:
           persist-credentials: "false"
 
@@ -144,7 +149,7 @@ jobs:
           cat .hash-files.sha
 
       - name: "Setup Pythons (required)"
-        uses: "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" # v6.2.0
+        uses: "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97" # v7.0.0
         env:
           PIP_DISABLE_PIP_VERSION_CHECK: "1"
         with:
@@ -156,7 +161,7 @@ jobs:
 
       - name: "Restore cache"
         id: "restore-cache"
-        uses: "actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306" # v5.0.3
+        uses: "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
         with:
           path: |
             .tox/
@@ -191,7 +196,7 @@ jobs:
 
           uv venv --no-project --no-managed-python .venv
           Out-File -InputObject "*" -FilePath .venv/.gitignore
-          uv pip install --no-managed-python --directory=.venv --requirements=$REQUIREMENTS_PATH --link-mode=copy
+          uv pip install --no-managed-python --prefix=.venv --requirements=$REQUIREMENTS_PATH --link-mode=copy
 
       - name: "Create a virtual environment (non-Windows)"
         if: "steps.restore-cache.outputs.cache-hit == false && runner.os != 'Windows'"
@@ -202,11 +207,11 @@ jobs:
 
           uv venv --no-project --no-managed-python .venv
           echo "*" > ".venv/.gitignore"
-          uv pip install --no-managed-python --directory=.venv --requirements="${REQUIREMENTS_PATH}"
+          uv pip install --no-managed-python --prefix=.venv --requirements="${REQUIREMENTS_PATH}"
 
       - name: "Setup Pythons (requested)"
         if: "fromJSON(env.TOX_CONFIG).python-versions-required != fromJSON(env.TOX_CONFIG).python-versions-requested"
-        uses: "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" # v6.2.0
+        uses: "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97" # v7.0.0
         env:
           PIP_DISABLE_PIP_VERSION_CHECK: "1"
         with:

@@ -17,6 +17,27 @@ in the ``changelog.d/`` directory on GitHub.
 
 ..  scriv-insert-here
 
+.. _changelog-2.2:
+
+2.2 — 2026-10-13
+================
+
+Changed
+-------
+
+-   Run steps in parallel when possible.
+-   Update the default CPython version to 3.14.
+-   Update all tool and dependency versions.
+-   Update all non-configurable runners to ``ubuntu-26.04``.
+
+Fixed
+-----
+
+-   Fix ``uv pip install`` invocations to use the ``--prefix`` option.
+
+    Previously, the ``--directory`` option was used,
+    which didn't result in e.g. ``.venv/bin/tox`` existing.
+
 .. _changelog-2.1:
 
 2.1 — 2026-03-27

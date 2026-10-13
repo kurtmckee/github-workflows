@@ -39,7 +39,7 @@ jobs:
     needs: ["halt"]
     #]#
     name: "Tag"
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-26.04"
     permissions:
       contents: "write"
     outputs:
@@ -47,7 +47,8 @@ jobs:
       tag-name: "${{ steps.get-tag-name.outputs.tag-name }}"
     steps:
       - name: "Checkout the repository"
-        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+        uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
+        background: true
         with:
           ref: "${{ github.sha }}"
           fetch-depth: "0"
@@ -55,16 +56,29 @@ jobs:
           persist-credentials: "false"
 
       - name: "Setup Python"
-        uses: "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" # v6.2.0
+        uses: "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97" # v7.0.0
+        background: true
         with:
           python-version: "${{ env.PYTHON_VERSION }}"
 
       - name: "Install uv"
-        uses: "astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867" # v7.1.6
+        uses: "astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7" # v10.2.0
+        background: true
         with:
           version: "${{ env.UV_VERSION }}"
           enable-cache: "false"
           ignore-empty-workdir: "true"
+
+      - name: "Install pandoc"
+        background: true
+        env:
+          PANDOC_DEB_URL: "https://github.com/jgm/pandoc/releases/download/${{ env.PANDOC_VERSION }}/pandoc-${{ env.PANDOC_VERSION }}-1-amd64.deb"
+        run: |
+          wget -nv -O "${RUNNER_TEMP}/pandoc.deb" "${PANDOC_DEB_URL}"
+          sudo dpkg -i "${RUNNER_TEMP}/pandoc.deb"
+          rm "${RUNNER_TEMP}/pandoc.deb"
+
+      - wait-all: true
 
       - name: "Get tag name"
         id: "get-tag-name"
@@ -113,15 +127,6 @@ jobs:
 
           echo "BOT_NAME=${BOT_NAME}" >> "${GITHUB_ENV}"
           echo "BOT_EMAIL=${BOT_EMAIL}" >> "${GITHUB_ENV}"
-
-      - name: "Install pandoc"
-        if: "steps.verify-repo-state.outputs.tag-exists == 'false'"
-        env:
-          PANDOC_DEB_URL: "https://github.com/jgm/pandoc/releases/download/${{ env.PANDOC_VERSION }}/pandoc-${{ env.PANDOC_VERSION }}-1-amd64.deb"
-        run: |
-          wget -nv -O pandoc.deb "${PANDOC_DEB_URL}"
-          sudo dpkg -i ./pandoc.deb
-          rm ./pandoc.deb
 
       - name: "Generate the annotated git tag content"
         if: "steps.verify-repo-state.outputs.tag-exists == 'false'"

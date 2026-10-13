@@ -115,7 +115,7 @@ def test_tox_factors():
 @pytest.mark.parametrize(
     "key, value, expected",
     (
-        ("cpython-beta", "3.14", "3.14"),
+        ("cpython-beta", "99.0", "99.0"),
         ("pypys", ["3.10"], "pypy3.10"),
     ),
 )
@@ -129,7 +129,7 @@ def test_tox_stable_cpython_injection(key, value, expected):
 
     workflow_assets.tox.config_transformer.transform_config(config)
     assert config["python-versions-requested"] == expected
-    assert config["python-versions-required"] == expected + "\n3.13"
+    assert config["python-versions-required"] == expected + "\n3.14"
 
 
 def test_tox_stable_cpython_injection_unnecessary():
