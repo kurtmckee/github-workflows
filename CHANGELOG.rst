@@ -25,11 +25,10 @@ in the ``changelog.d/`` directory on GitHub.
 Changed
 -------
 
+-   Run steps in parallel when possible.
 -   Update the default CPython version to 3.14.
 -   Update all tool and dependency versions.
 -   Update all non-configurable runners to ``ubuntu-26.04``.
-
--   Run steps in parallel when possible.
 
 Fixed
 -----
