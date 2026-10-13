@@ -16,7 +16,7 @@ on:
 env:
   PYTHON_VERSION: "[[ PYTHON_VERSION ]]"
   UV_VERSION: "[[ UV_VERSION ]]"
-  PANDOC_VERSION: "3.8.3"
+  PANDOC_VERSION: "3.12.1"
   SCRIV_REQUIREMENTS: |
     [[ include_requirements("scriv") | indent(4) ]]
 

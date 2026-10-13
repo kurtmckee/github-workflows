@@ -40,7 +40,7 @@ on:
 env:
   PYTHON_VERSION: "[[ PYTHON_VERSION ]]"
   UV_VERSION: "[[ UV_VERSION ]]"
-  PANDOC_VERSION: "3.8.3"
+  PANDOC_VERSION: "3.12.1"
   CHECK_JSONSCHEMA_REQUIREMENTS: |
     [[ include_requirements("check_jsonschema") | indent(4) ]]
   TOX_REQUIREMENTS: |
