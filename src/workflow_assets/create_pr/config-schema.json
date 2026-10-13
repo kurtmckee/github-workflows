@@ -9,7 +9,7 @@
     "python-version": {
       "description": "The Python version to use when running tox.",
       "type": "string",
-      "default": "3.13"
+      "default": "3.14"
     },
     "tox-label-create-changes": {
       "description": "The tox label (passed using the `-m` argument) to run before creating the commit. Two environment variables will be set: `VERSION` and `PR_BODY_OUTPUT_PATH`. After running tox, all file changes shown in `git status` will be included in the commit.",

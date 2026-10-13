@@ -87,8 +87,10 @@ mutex_keys = (
     "tox-skip-environments",
     "tox-skip-environments-regex",
 )
-all_mutex_combinations = itertools.chain(
-    *[itertools.combinations(mutex_keys, r=r) for r in range(len(mutex_keys))]
+all_mutex_combinations = tuple(
+    itertools.chain(
+        *[itertools.combinations(mutex_keys, r=r) for r in range(len(mutex_keys))]
+    )
 )
 
 

@@ -45,7 +45,7 @@ def transform_config(config: dict[str, typing.Any]) -> None:
     # a stable CPython version must be included during initial Python setup.
     python_versions_required = python_versions_requested.copy()
     if not cpythons:
-        python_versions_required.append("3.13")
+        python_versions_required.append("3.14")
     config["python-versions-requested"] = "\n".join(python_versions_requested)
     config["python-versions-required"] = "\n".join(python_versions_required)
 
