@@ -1,6 +1,6 @@
 [project]
 name = "github-workflows"
-version = "2.1"
+version = "2.2"
 classifiers = ["Private :: Do not Upload"]
 requires-python = ">=3.14,<3.15"
 
